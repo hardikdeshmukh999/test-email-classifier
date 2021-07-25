@@ -65,9 +65,9 @@ def preprocess(text, stem=True, stop_w = False):
 
 
 
-loaded_model = joblib.load(r"C:\Users\Admin\Desktop\xray-streamit\email-cat\model1.sav")
+loaded_model = joblib.load("model1.sav")
 # loading pickled vectorizer
-cv_fit = joblib.load(r"C:\Users\Admin\Desktop\xray-streamit\email-cat\cv1.pkl")
+cv_fit = joblib.load("cv1.pkl")
 
 st.write("""
 # Email Classifier
