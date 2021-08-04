@@ -1,0 +1,51 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy container app to Azure Web App - emailcatt
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Log in to registry
+      uses: docker/login-action@v1
+      with:
+        registry: https://mcr.microsoft.com/
+        username: ${{ secrets.AzureAppService_ContainerUsername_861fa55ec7dd423faf630dc2a6c83779 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_deaeae17680d4f9894e850f201369f12 }}
+
+    - name: Build and push container image to registry
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: mcr.microsoft.com/${{ secrets.AzureAppService_ContainerUsername_861fa55ec7dd423faf630dc2a6c83779 }}/appsvc/staticsite:${{ github.sha }}
+        file: ./Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'emailcatt'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_9490d1038e2d444892b0bf6d59e1c5c1 }}
+        images: 'mcr.microsoft.com/${{ secrets.AzureAppService_ContainerUsername_861fa55ec7dd423faf630dc2a6c83779 }}/appsvc/staticsite:${{ github.sha }}'
